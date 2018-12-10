@@ -1,0 +1,47 @@
+body {
+        background-color: pink;
+}
+p {
+        width: 800px;
+        font: 25px calibri;
+}
+
+#navbar {
+        background-color: skyblue;
+        font: 30px calibri;
+        width: 300px;
+        height: 70px;
+        color:white;
+        text-align:left;
+}
+
+#title {
+        background-color:hotpink;
+        height: 70px;
+        font: 30px calibri;
+        color:black;
+        text-align:center;
+}
+
+tr {
+        width: 640;
+}
+
+a:link {
+color: grey;
+}
+
+
+a:visited {
+color: black;
+}
+
+
+a:hover {
+color: hotpink;
+}
+
+
+a:active {
+color: white;
+}
