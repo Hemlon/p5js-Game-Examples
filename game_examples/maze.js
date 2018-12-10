@@ -217,7 +217,6 @@ var mazePlayer = function (x,y,angle) {
    
 };
 
-
 var gameReset = function() {
    players[0] = new player(100,100,0);
    players[1] = new player(300,300,180);
@@ -247,22 +246,25 @@ var checkInput = function () {
             players[0].accelerate();          
         }
 
-        if (letters.a)
+        if (letters['A'])
         {
         players[1].angle = 180;
         players[1].accelerate();
         }
-        if (letters.d)
+
+        if (letters['D'])
         {
         players[1].angle = 0;
         players[1].accelerate();
         }
-        if (letters.w)
+
+        if (letters['W'])
         {
         players[1].angle = 270;
         players[1].accelerate();
         }
-        if (letters.s)
+
+        if (letters['S'])
         {
         players[1].angle = 90;
         players[1].accelerate(); 
@@ -270,7 +272,7 @@ var checkInput = function () {
 };
 
 var specialKeys = function (){
-    if(letters.y)
+    if(letters['Y'])
     {
             if (gameWin === true)
             {
@@ -278,16 +280,17 @@ var specialKeys = function (){
                 gameReset();
                
             }
-        }
-    if(letters.z)
+    }
+
+    if(letters['Z'])
     {
         isPaused = true;
     }
-    if(letters.x)
+    if(letters['X'])
     {
         isPaused = false;
     }
-    if(letters.c)
+    if(letters['C'])
     {
         showCollisions = !showCollisions;
     }
@@ -333,14 +336,14 @@ draw = function() {
 
 };
 
-
 keyPressed = function() {
   keys[keyCode] = true;
   letters[key] = true;
+  
 };
+
 keyReleased = function() {
-      keys[keyCode] = false; 
-      letters[key] = false;
-    
+  keys[keyCode] = false; 
+  letters[key] = false;
 };
 
