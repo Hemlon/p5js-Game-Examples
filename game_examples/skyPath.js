@@ -11,13 +11,20 @@ var story = [];
 function preload()
 {
 	bg = loadImage("pics/background.png");
-	bgMusic = loadSound("music/background");	
+	bgMusic = loadSound("music/Tricky Jumps");	
 	npcMan = new npc();
-	anim[0] = new animation("pics/fhero_idle_right.png", 4, 16,16);
-	anim[1] = new animation("pics/fhero_idle_left.png", 4,16,16);
-	anim[2] = new animation("pics/fhero_walk_left.png", 4,16,16);
-	anim[3] = new animation("pics/fhero_walk_right.png", 4,16,16);
+	anim[0] = new animation("pics/main idle.png", 4, 16,16);
+	anim[1] = new animation("pics/main idle left.png", 4,16,16);
+	anim[2] = new animation("pics/main walking.png", 12,16,16);
+	anim[3] = new animation("pics/main walking left.png", 12,16,16);
+	anim[4] = new animation("pics/main jump.png", 13, 16,16);
+	anim[5] = new animation("pics/main jump left.png", 13,16,16);
+	anim[6] = new animation("pics/main running.png", 6,16,16);
+	anim[7] = new animation("pics/main running left.png", 6,16,16);
+	anim[8] = new animation("pics/main slide.png", 2,16,16);
+	anim[9] = new animation("pics/main slide left.png", 2,16,16);
 	images[0] = loadImage("pics/water.png");
+	
 	
 };
 
@@ -42,8 +49,14 @@ function setup()
 	hero = new platformer(340,400,0);
 	hero.image["idleRight"] = anim[0];
 	hero.image["idleLeft"] = anim[1];
-	hero.image["walkLeft"] = anim[2];
-	hero.image["walkRight"] = anim[3];
+	hero.image["walkRight"] = anim[2];
+	hero.image["walkLeft"] = anim[3];
+	hero.image["jumpRight"] = anim[4];
+	hero.image["jumpLeft"] = anim[5];
+	hero.image["runRight"] = anim[6];
+	hero.image["runLeft"] = anim[7];
+	hero.image["slideRight"] = anim[8];
+	hero.image["slideLeft"] = anim[9];		
 	viewport = new viewCam(0, 0);
 	drawMousePos.setView(viewport);
 	bgMusic.loop();
@@ -214,7 +227,7 @@ var platformer = function (x,y,angle) {
     this.score = 0;
     this.gravity =0.02;
     this.isGravity = true;
-    this.damping = 0.9;
+    this.damping = 0.95;
     this.jumpStrength = 5;
     this.animationSeq = "idleRight";
     this.depth = 0;
@@ -224,17 +237,26 @@ var platformer = function (x,y,angle) {
     this.canJump = false;
     this.isInAir = true;
     this.visible = true;
+	this.hpMax = 100;
+	this.hpCurrent = 100;
+	this.hpAnim = 10;
+	this.mpMax = 50;
+	this.mpCurrent = 50;
+	this.mpAnim = 0;
+	this.mpRate = 0.1;
+	this.hpRate = 0.4;
+
 
     this.draw = function() {
-    	 this.x += this.velocityX;
-   	 this.y += this.velocityY;
-    	 this.velocityX *= this.damping;
-   	 this.isInAir = 0;
+    this.x += this.velocityX;
+   	this.y += this.velocityY;
+    this.velocityX *= this.damping;
+
 
        	for (var i =0; i < bgCollisions.bounds.length;i++)
        	{
-       		var c = bgCollisions.bounds[i];
-        		this.isInAir = 0;
+       	var c = bgCollisions.bounds[i];
+    
 		if (!inBounds(this, c.x, c.x+c.width, c.y, c.y + c.height + this.velocityY))
         		{   
           	 		this.velocityY += this.gravity; 	
@@ -244,10 +266,14 @@ var platformer = function (x,y,angle) {
           			this.y = c.y;
            			this.canJump = true;
            			this.velocityY = 0;
-            			if(this.isJumping === true)
+					this.isInAir = false;
+            		if(this.isJumping === true)
            			{
                 			this.y -= 2;
                 			this.velocityY = -this.jumpStrength;
+							this.isInAir = true;
+							this.image["jumpRight"].currentFrame =0 ;
+							this.image["jumpLeft"].currentFrame = 0;
            			}
        	 	} 
         	}
@@ -255,7 +281,7 @@ var platformer = function (x,y,angle) {
         	for(var i= 0; i < c.length;i++){
         	if (inBounds(this, c[i].x, c[i].x+c[i].width, c[i].y, c[i].y+c[i].height))
               	{
-               	this.velocityY = 0.5;
+					this.velocityY = 0.5;
                 	this.canJump = false;
                 	this.velocityY += this.gravity;
                 }   
@@ -267,7 +293,7 @@ var platformer = function (x,y,angle) {
                 {                  
                 	this.velocityX = 0;
               		this.x = c[i].x + c[i].width;
-               	this.canJump = false;
+					this.canJump = false;
                 	this.velocityY += this.gravity;
                 }   
        }	            
@@ -282,32 +308,69 @@ var platformer = function (x,y,angle) {
                 }   
        }      
 
-       this.isJumping = false;
+ 
        this.bound.x = this.x;
        this.bound.y = this.y-this.size;
 
-		if (this.angle == 0)
+		if (this.angle == 0 && !this.isInAir)
 		{		
 			this.animationSeq = "idleRight";
+			this.animSpeed = 10;
 			if (Math.abs(this.velocityX) > 0.05)
 			{
 				this.animationSeq = "walkRight";
 				this.animSpeed = 10;
-			
+				if(keys[RIGHT_ARROW] && Math.abs(this.velocityX) > 3)
+				{	
+					this.animationSeq = "runRight";
+					this.animSpeed = 3;
+				}
+				
+				if(!keys[RIGHT_ARROW] && Math.abs(this.velocityX) > 1)
+					this.animationSeq = "slideRight"	
 			}
 
 		}
 
-		if (this.angle == 180)
-		{
+	if (this.angle == 180 && !this.isInAir)
+		{		
 			this.animationSeq = "idleLeft";
+			this.animSpeed = 10;
+
 			if (Math.abs(this.velocityX) > 0.05)
 			{
 				this.animationSeq = "walkLeft";
 				this.animSpeed = 10;
+
+				if(keys[LEFT_ARROW] && Math.abs(this.velocityX) > 3)
+				{	
+					this.animationSeq = "runLeft";
+					this.animSpeed = 3;
+				}
+				
+				if(!keys[LEFT_ARROW] && Math.abs(this.velocityX) > 1)
+					this.animationSeq = "slideLeft"	
 			}
+
 		}
 
+
+		if (this.isInAir)
+		{
+				if (this.angle == 0)
+					this.animationSeq = "jumpRight";
+				else
+					this.animationSeq = "jumpLeft";
+				this.animSpeed = 8;
+		}
+
+		if( this.hpAnim < this.hpCurrent)
+		this.hpAnim = math.between(this.hpAnim + this.hpRate, 0, this.hpCurrent);
+
+		if( this.mpAnim < this.mpCurrent)
+		this.mpAnim = math.between(this.mpAnim + this.mpRate, 0, this.mpCurrent);
+		
+		this.isJumping = false;
 
       	 if (showCollisions) 
 	{
@@ -317,8 +380,10 @@ var platformer = function (x,y,angle) {
 
 	if(this.visible)
        	 {	
-		this.image[this.animationSeq].setSize(this.size, this.size);
-		this.image[this.animationSeq].animate(this.x,this.y-this.size,this.animSpeed);
+			this.image[this.animationSeq].setSize(this.size, this.size);
+			this.image[this.animationSeq].animate(this.x,this.y-this.size,this.animSpeed);		
+			hbar(this,6,-45,20,5,this.hpCurrent, this.hpAnim, this.hpMax);
+			mbar(this,6,-40,20,5,this.mpCurrent, this.mpAnim, this.mpMax);		
       	 }
     };
       
@@ -343,3 +408,24 @@ var platformer = function (x,y,angle) {
     this.deaccelerate= function() { if(!this.isDead){this.setVelocity(this.getVelocity() - this.accel);}};
 
 };
+
+
+function hbar(obj, hbarxoff, hbaryoff, hbarlen, hbarwid,  current, anim, max)
+{
+			fill(0,0,0);
+			rect(obj.x + hbarxoff, obj.y + hbaryoff, hbarlen, hbarwid);
+			fill(255,200,200);
+			rect(obj.x + hbarxoff, obj.y + hbaryoff, hbarlen*current/max, hbarwid);
+			fill(255, 0,0);
+			rect(obj.x + hbarxoff, obj.y + hbaryoff, hbarlen*anim/max, hbarwid);
+}
+
+function mbar(obj, hbarxoff, hbaryoff, hbarlen, hbarwid,  current, anim, max)
+{
+			fill(0,0,0);
+			rect(obj.x + hbarxoff, obj.y + hbaryoff, hbarlen, hbarwid);
+			fill(200,200,255);
+			rect(obj.x + hbarxoff, obj.y + hbaryoff, hbarlen*current/max, hbarwid);
+			fill(0, 0,255);
+			rect(obj.x + hbarxoff, obj.y + hbaryoff, hbarlen*anim/max, hbarwid);
+}
